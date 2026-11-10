@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, ChevronRight, ClipboardList, Key, LogOut, Maximize2, Menu, X } from 'lucide-react';
+import { logout } from '../api/auth';
 import { changePassword } from '../api/users';
 import { syncNow } from '../api/nodes';
 import { fetchLogs } from '../api/logs';
@@ -266,6 +267,12 @@ const Navbar = ({ sectionTitle }) => {
                             <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-surface p-1.5 shadow-lg">
                                 <button
                                     onClick={() => {
+                                        // Tell the server first so the old token is refused afterwards (fire and forget:
+                                        // the login page must show at once, even if this call is slow or fails).
+                                        const currentToken = localStorage.getItem('token');
+                                        if (currentToken && currentToken !== '0') {
+                                            logout(currentToken).catch(() => {});
+                                        }
                                         localStorage.removeItem('token');
                                         localStorage.setItem('token', '0');
                                         window.dispatchEvent(new Event('storage'));
